@@ -7,6 +7,7 @@ namespace IbbDownloadService.NugetModule.Services;
 
 internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient httpClient, INugetPackageReader packageReader, ILogger logger) : BackgroundService
 {
+    private HashSet<string> _existingNugets = new();
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.Information("Nuget downloader started");
@@ -21,6 +22,12 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
                 foreach (var nuget in nugetsToDownload)
                 {
                     await LoadNugetPackage(stoppingToken, nuget, context);
+                    
+                }
+
+                var downloadedNugets = context.Nugets.Where(x => x.DownloadedAt != null);
+                foreach (var nuget in downloadedNugets)
+                {
                     await LoadDependencies(stoppingToken, nuget, context);
                 }
             }
@@ -48,7 +55,12 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
                 var existingDependency =
                     await context.Nugets.FirstOrDefaultAsync(
                         x => x.Name.ToLower() == dependency.Id.ToLower() && x.Version.ToLower() == dependency.MaxVersion.Trim().ToLower(), stoppingToken);
-                if (existingDependency != null) continue;
+                if (_existingNugets.Contains($"{dependency.Id.ToLower()}.{dependency.MaxVersion.ToLower()}") ||
+                    existingDependency != null)
+                {
+                    logger.Information("Dependency {Id} {Version} already exists", dependency.Id, dependency.MaxVersion);
+                    continue;
+                };
                 var dependencyNuget = new Nuget
                 {
                     Version = dependency.MaxVersion,
@@ -59,13 +71,14 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
                     IsInsertedByUpdater = true
                 };
                 context.Nugets.Add(dependencyNuget);
-                
+                _existingNugets.Add($"{dependencyNuget.Name.ToLower()}.{dependencyNuget.Version.ToLower()}");
                 context.NugetDependencies.Add(new NugetDependency()
                 {
                     NugetId = nuget.Id,
                     DependencyId = dependencyNuget.Id
                 });
                 await context.SaveChangesAsync(stoppingToken);
+                
             }
         }
         catch (Exception ex)
@@ -89,6 +102,7 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
             await File.WriteAllBytesAsync(path, downloadResult, stoppingToken);
             nuget.DownloadedAt = DateTime.UtcNow;
             await context.SaveChangesAsync(stoppingToken);
+            _existingNugets.Add($"{nuget.Name.ToLower()}.{nuget.Version.ToLower()}");
         }
         catch (Exception ex)
         {
