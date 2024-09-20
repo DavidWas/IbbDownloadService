@@ -6,7 +6,7 @@
 @namespace IbbDownloadService.Components
 
 <div class="container">
-    <Table Rows="_pendingRows" Header="_header" Title="Pending"></Table>
+    <Table Rows="_pendingRows" Header="_header" Title="Pending" RowActions="@_actionFragments"></Table>
     <button type="button" class="primary" onclick="window.showDialog('AddPendingModal');">Add</button>
 </div>
 
@@ -41,16 +41,27 @@
 @inject IMediator Mediator
 
 @code {
-    private readonly string[] _header = ["Name", "Added", "Version", "MD5"];
+    private readonly string[] _header = ["Name", "Added", "Version", "MD5", ""];
     private List<string[]> _pendingRows = new();
     private AddPendingNuget _addPendingNuget = new();
     private EditContext _editContext = null!;
+    private List<RenderFragment<string[]>> _actionFragments = null!;
+
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadPendingRows();
+        _editContext = new EditContext(_addPendingNuget);
+        _actionFragments = new List<RenderFragment<string[]>>
+        {
+            row => @<button type="button" class="rowButton" @onclick="(e) => OnVerifyClicked(row)">Verify</button>
+        };
+    }
+
+    private async Task LoadPendingRows()
+    {
         var result = await Mediator.Send(new GetPendingNugetsQuery());
         _pendingRows = result.Select(n => new[] { n.Name, n.CreatedAt.ToString("dd.MM.yyyy"), n.Version, n.Md5Hash }).ToList();
-        _editContext = new EditContext(_addPendingNuget);
     }
 
     private async Task HandleSubmit()
@@ -64,9 +75,14 @@
                 Md5 = _addPendingNuget.Md5
             };
             await Mediator.Send(command);
+            await LoadPendingRows();
             await JSRuntime.InvokeVoidAsync("window.closeDialog", "AddPendingModal");
         }
     }
 
+    private void OnVerifyClicked(string[] row)
+    {
+        Console.WriteLine(row);
+    }
 
 }
