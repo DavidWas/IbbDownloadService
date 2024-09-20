@@ -1,4 +1,5 @@
 using System.Reflection;
+using IbbDownloadService.NugetModule.Contracts.Events;
 using IbbDownloadService.NugetModule.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<NugetDbContext>(options => { options.UseSqlite("Data Source=nuget.db"); });
         mediatRAssemblies.Add(typeof(ServiceCollectionExtensions).Assembly);
+        services.AddSingleton<NugetUpdatedEvent>();
         logger.Information("Finished adding NugetModule services");
         return services;
     }

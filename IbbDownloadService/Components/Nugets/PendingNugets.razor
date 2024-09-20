@@ -1,12 +1,13 @@
 @using IbbDownloadService.NugetModule.Contracts.Commands
 @using IbbDownloadService.NugetModule.Contracts.DTOs
+@using IbbDownloadService.NugetModule.Contracts.Events
 @using IbbDownloadService.NugetModule.Contracts.Queries
 @using MediatR
 @namespace IbbDownloadService.Components
 
 <div class="container">
     <Table Rows="_pendingRows" Header="_header" Title="Pending" RowActions="@_actionFragments"></Table>
-    <button type="button" class="primary" @onclick="()=>IsPendingModalOpen = true">Add</button>
+    <button type="button" class="primary" @onclick="() => IsPendingModalOpen = true">Add</button>
 </div>
 
 <Modal ModalId="AddPendingModal" ModalTitle="Hinzufügen" @bind-IsOpen="IsPendingModalOpen">
@@ -36,16 +37,28 @@
     </EditForm>
 </Modal>
 
+<Modal ModalId="VerifyConfirmationModal" ModalTitle="Wirklich verifizieren?" @bind-IsOpen="IsVerifyConfirmationModalOpen">
+    <div class="form-buttons">
+        <div>
+            <p>@_verifyPendingNuget?.Name</p>
+            <p>@_verifyPendingNuget?.Version</p>
+        </div>
+        <button type="button" class="primary" @onclick="VerifyNuget">Yes</button>
+        <button type="button" class="secondary" @onclick="() => IsVerifyConfirmationModalOpen = false">No</button>
+    </div>
+</Modal>
 
 @inject IMediator Mediator
-
+@inject NugetUpdatedEvent NugetUpdatedEvent
 @code {
-    private readonly string[] _header = ["Name", "Added", "Version", "MD5", ""];
+    private readonly string[] _header = ["Id", "Name", "Added", "Version", "MD5", ""];
     private List<string[]> _pendingRows = new();
     private AddPendingNuget _addPendingNuget = new();
     private EditContext _editContext = null!;
     private List<RenderFragment<string[]>> _actionFragments = null!;
     private bool IsPendingModalOpen { get; set; }
+    private bool IsVerifyConfirmationModalOpen { get; set; }
+    private VerifyPendingNuget? _verifyPendingNuget;
 
     protected override async Task OnInitializedAsync()
     {
@@ -60,7 +73,7 @@
     private async Task LoadPendingRows()
     {
         var result = await Mediator.Send(new GetPendingNugetsQuery());
-        _pendingRows = result.Select(n => new[] { n.Name, n.CreatedAt.ToString("dd.MM.yyyy"), n.Version, n.Md5Hash }).ToList();
+        _pendingRows = result.Select(n => new[] { n.Id.ToString(), n.Name, n.CreatedAt.ToString("dd.MM.yyyy"), n.Version, n.Md5Hash }).ToList();
     }
 
     private async Task HandleSubmit()
@@ -81,7 +94,28 @@
 
     private void OnVerifyClicked(string[] row)
     {
-        Console.WriteLine(row);
+        _verifyPendingNuget = new VerifyPendingNuget()
+        {
+            Id = Guid.Parse(row[0]),
+            Name = row[1],
+            Version = row[3],
+        };
+        IsVerifyConfirmationModalOpen = true;
+    }
+
+    private async Task VerifyNuget()
+    {
+        if (_verifyPendingNuget != null)
+        {
+            IsVerifyConfirmationModalOpen = false;
+            await Mediator.Send(new VerifyPendingNugetCommand()
+            {
+                Id = _verifyPendingNuget.Id
+            });
+            await LoadPendingRows();
+            NugetUpdatedEvent.Notify();
+        }
+        _verifyPendingNuget = null;
     }
 
 }
