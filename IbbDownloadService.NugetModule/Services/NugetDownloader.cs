@@ -10,7 +10,6 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.Information("Nuget downloader started");
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = serviceProvider.CreateScope();
@@ -42,7 +41,6 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
 
     private async Task LoadDependencies(CancellationToken stoppingToken, Nuget nuget, NugetDbContext context)
     {
-   
         if (nuget.DownloadedAt == null) return;
         try
         {
@@ -52,6 +50,7 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
                 var existingDependency = await GetExistingDependency(context, dependency, stoppingToken);
                 if (existingDependency == null)
                 {
+                    logger.Information("Adding new dependency {Id} {Version}", dependency.Id, dependency.MaxVersion);
                     existingDependency = await AddNewDependency(context, dependency, stoppingToken);
                 }
 
@@ -62,7 +61,6 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
         {
             logger.Error("Failed to load dependencies for {Id} {Version}", nuget.Name, nuget.Version);
         }
-
     }
     
     private async Task<Nuget?> GetExistingDependency(NugetDbContext context, NugetDependencyData dependency, CancellationToken stoppingToken)
@@ -92,6 +90,7 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
     {
         if (!context.NugetDependencies.Any(x => x.NugetId == nuget.Id && x.DependencyId == existingDependency.Id))
         {
+            logger.Information("Adding dependency {Id} {Version} to {NugetId} {NugetVersion}", existingDependency.Name, existingDependency.Version, nuget.Name, nuget.Version);
             context.NugetDependencies.Add(new NugetDependency
             {
                 NugetId = nuget.Id,

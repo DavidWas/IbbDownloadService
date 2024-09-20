@@ -48,7 +48,8 @@ internal class NugetVersionSync(IServiceProvider serviceProvider, ILogger<NugetV
             NeedsVerification = false,
             CreatedAt = DateTime.UtcNow,
             Name = nuget.Name,
-            IsInsertedByUpdater = true
+            IsInsertedByUpdater = true,
+            IsUpdate = true
         };
         context.Nugets.Add(createdNuget);
         await context.SaveChangesAsync(stoppingToken);

@@ -15,7 +15,7 @@ internal class GetVerifiedNugetsHandler : IRequestHandler<GetVerifiedNugetsQuery
     }
     public Task<IList<VerifiedNuget>> Handle(GetVerifiedNugetsQuery request, CancellationToken cancellationToken)
     {
-        var verifiedNugets = _context.Nugets.Where(x => x.VerifiedAt != null || !x.NeedsVerification)
+        var verifiedNugets = _context.Nugets.Where(x => x.VerifiedAt != null || x.IsUpdate == true)
             .OrderBy(x => x.Name);
         IList<VerifiedNuget> result = verifiedNugets.Select(x => new VerifiedNuget()
         {
