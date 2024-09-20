@@ -1,27 +1,36 @@
 @namespace IbbDownloadService.Components
+@inject IJSRuntime JSRuntime
 
-<div>
-    @* <button class="primary" onclick="window.dialog.showModal();">Open Dialog</button> *@
-
-    <dialog id="@ModalId">
-        <h2>@ModalTitle</h2>
-        @ChildContent
-        <button onclick="@CloseAction" aria-label="close" class="x">❌</button>
-    </dialog>
-
-
-</div>
+<dialog id="@ModalId">
+    <h2>@ModalTitle</h2>
+    @ChildContent
+    <button @onclick="()=>IsOpen = false" aria-label="close" class="x">❌</button>
+</dialog>
 
 
 @code {
-[Parameter]
-public string ModalId { get; set; }  = "dialog";
+    private bool _isOpen = false;
 
-[Parameter]
-public string ModalTitle { get; set; } = "Modal Title";
+    [Parameter]
+    public bool IsOpen
+    {
+        get => _isOpen;
+        set
+        {
+            if(_isOpen == value) return;
+            _isOpen = value;
+            JSRuntime.InvokeVoidAsync(value ? "window.showDialog" : "window.closeDialog", ModalId);
+            IsOpenChanged.InvokeAsync(value);
+        }
+    }
 
-[Parameter]
-public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
-private string CloseAction => $"window.{ModalId}.close();";
+    [Parameter] public string ModalId { get; set; } = "dialog";
+
+    [Parameter] public string ModalTitle { get; set; } = "Modal Title";
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string CloseAction => $"window.{ModalId}.close();";
 }

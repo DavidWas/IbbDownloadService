@@ -2,15 +2,14 @@
 @using IbbDownloadService.NugetModule.Contracts.DTOs
 @using IbbDownloadService.NugetModule.Contracts.Queries
 @using MediatR
-@inject IJSRuntime JSRuntime
 @namespace IbbDownloadService.Components
 
 <div class="container">
     <Table Rows="_pendingRows" Header="_header" Title="Pending" RowActions="@_actionFragments"></Table>
-    <button type="button" class="primary" onclick="window.showDialog('AddPendingModal');">Add</button>
+    <button type="button" class="primary" @onclick="()=>IsPendingModalOpen = true">Add</button>
 </div>
 
-<Modal ModalId="AddPendingModal" ModalTitle="Hinzufügen">
+<Modal ModalId="AddPendingModal" ModalTitle="Hinzufügen" @bind-IsOpen="IsPendingModalOpen">
     <EditForm EditContext="_editContext">
         <DataAnnotationsValidator/>
         <ValidationSummary/>
@@ -46,7 +45,7 @@
     private AddPendingNuget _addPendingNuget = new();
     private EditContext _editContext = null!;
     private List<RenderFragment<string[]>> _actionFragments = null!;
-
+    private bool IsPendingModalOpen { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -76,7 +75,7 @@
             };
             await Mediator.Send(command);
             await LoadPendingRows();
-            await JSRuntime.InvokeVoidAsync("window.closeDialog", "AddPendingModal");
+            IsPendingModalOpen = false;
         }
     }
 
