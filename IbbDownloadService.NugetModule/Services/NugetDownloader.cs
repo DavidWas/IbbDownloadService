@@ -54,28 +54,32 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
                 var existingDependency =
                     await context.Nugets.FirstOrDefaultAsync(
                         x => x.Name.ToLower() == dependency.Id.ToLower() && x.Version.ToLower() == dependency.MaxVersion.Trim().ToLower(), stoppingToken);
-                if (_existingNugets.Contains($"{dependency.Id.ToLower()}.{dependency.MaxVersion.ToLower()}") ||
-                    existingDependency != null)
+                if (existingDependency == null &&
+                    !_existingNugets.Contains($"{dependency.Id.ToLower()}.{dependency.MaxVersion.ToLower()}"))
                 {
-                    logger.Information("Dependency {Id} {Version} already exists", dependency.Id, dependency.MaxVersion);
-                    continue;
-                };
-                var dependencyNuget = new Nuget
+                    existingDependency = new Nuget()
+                    {
+                        Name = dependency.Id,
+                        Version = dependency.MaxVersion,
+                        VerifiedAt = null,
+                        NeedsVerification = false,
+                        CreatedAt = DateTime.UtcNow,
+                        IsInsertedByUpdater = true
+                    };
+                    context.Nugets.Add(existingDependency);
+                    _existingNugets.Add($"{existingDependency.Name.ToLower()}.{existingDependency.Version.ToLower()}");
+                }
+
+                if (existingDependency != null && !context.NugetDependencies.Any(x =>
+                    x.NugetId == nuget.Id && x.DependencyId == existingDependency.Id))
                 {
-                    Version = dependency.MaxVersion,
-                    VerifiedAt = null,
-                    NeedsVerification = false,
-                    CreatedAt = DateTime.UtcNow,
-                    Name = dependency.Id,
-                    IsInsertedByUpdater = true
-                };
-                context.Nugets.Add(dependencyNuget);
-                _existingNugets.Add($"{dependencyNuget.Name.ToLower()}.{dependencyNuget.Version.ToLower()}");
-                context.NugetDependencies.Add(new NugetDependency()
-                {
-                    NugetId = nuget.Id,
-                    DependencyId = dependencyNuget.Id
-                });
+                    context.NugetDependencies.Add(new NugetDependency()
+                    {
+                        NugetId = nuget.Id,
+                        DependencyId = existingDependency.Id
+                    });
+                }
+
                 await context.SaveChangesAsync(stoppingToken);
                 
             }
