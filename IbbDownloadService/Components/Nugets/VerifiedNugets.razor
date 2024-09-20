@@ -9,13 +9,21 @@
 @inject NugetUpdatedEvent NugetUpdatedEvent
 @code {
 
-    private readonly string[] _verifiedHeader = ["Name", "Added", "Version", "Verified", "MD5"];
+    private readonly Table.TableHeader[] _verifiedHeader =
+    [
+        new ("Id") {IsVisible = false},
+        new("Name"),
+        new("Added"),
+        new("Version"),
+        new("Verified"),
+        new("MD5")
+    ];
     private List<string[]> _verifiedRows = new();
 
     private async Task LoadVerifiedNugets()
     {
         var verifiedResult = await Mediator.Send(new GetVerifiedNugetsQuery());
-        _verifiedRows = verifiedResult.Select(n => new[] { n.Name, n.CreatedAt.ToString("dd.MM.yyyy"), n.Version, n.VerifiedAt?.ToString("dd.MM.yyyy") ?? "", n.Md5Hash }).ToList();
+        _verifiedRows = verifiedResult.Select(n => new[] {n.Id.ToString(), n.Name, n.CreatedAt.ToString("dd.MM.yyyy"), n.Version, n.VerifiedAt?.ToString("dd.MM.yyyy") ?? "", n.Md5Hash }).ToList();
         StateHasChanged();
     }
     

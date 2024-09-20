@@ -51,7 +51,16 @@
 @inject IMediator Mediator
 @inject NugetUpdatedEvent NugetUpdatedEvent
 @code {
-    private readonly string[] _header = ["Id", "Name", "Added", "Version", "MD5", ""];
+
+    private readonly Table.TableHeader[] _header =
+    [
+        new("Id"){IsVisible = false},
+        new("Name"),
+        new("Added"),
+        new("Version"),
+        new("MD5"),
+        new("")
+    ]; 
     private List<string[]> _pendingRows = new();
     private AddPendingNuget _addPendingNuget = new();
     private EditContext _editContext = null!;

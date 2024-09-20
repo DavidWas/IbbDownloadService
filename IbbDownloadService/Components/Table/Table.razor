@@ -7,17 +7,27 @@
         <tr>
             @foreach (var header in Header)
             {
-                <th>@header</th>
+                if (!header.IsVisible)
+                {
+                    continue;
+                }
+
+                <th>@header.Text</th>
             }
         </tr>
         </thead>
         <tbody>
-        @foreach (var row in Rows)
+        @foreach (var row in PagedRows)
         {
             <tr>
-                @foreach (var cell in row)
+                @for (var i = 0; i < row.Length; i++)
                 {
-                    <td>@cell</td>
+                    if (!Header[i].IsVisible)
+                    {
+                        continue;
+                    }
+
+                    <td>@row[i]</td>
                 }
                 @if (RowActions.Any())
                 {
@@ -32,14 +42,54 @@
         }
         </tbody>
     </table>
+    @if (TotalPages > 1)
+    {
+        <div class="pagination">
+            <button @onclick="PreviousPage" disabled="@(_currentPage == 1)">Previous</button>
+            <span>Page @_currentPage of @TotalPages</span>
+            <button @onclick="NextPage" disabled="@(_currentPage == TotalPages)">Next</button>
+        </div>
+    }
 </div>
 
 @code {
     [Parameter] public string Title { get; set; } = "";
 
-    [Parameter] public string[] Header { get; set; } = [];
+    [Parameter] public TableHeader[] Header { get; set; } = [];
 
     [Parameter] public IList<string[]> Rows { get; set; } = new List<string[]>();
-    
+
     [Parameter] public IList<RenderFragment<string[]>> RowActions { get; set; } = new List<RenderFragment<string[]>>();
+
+    [Parameter] public int MaxRows { get; set; } = 10;
+
+    private int _currentPage = 1;
+
+    private IEnumerable<string[]> PagedRows => Rows.Skip((_currentPage - 1) * MaxRows).Take(MaxRows);
+
+    private int TotalPages => (int)Math.Ceiling(Rows.Count / (double)MaxRows);
+
+    private void PreviousPage()
+    {
+        if (_currentPage > 1)
+        {
+            _currentPage--;
+        }
+    }
+
+    private void NextPage()
+    {
+        if (_currentPage < TotalPages)
+        {
+            _currentPage++;
+        }
+    }
+
+    public class TableHeader(string text)
+    {
+        public string Text { get; set; } = text;
+        public Type Type { get; set; } = typeof(String);
+        public bool IsVisible { get; set; } = true;
+    }
+
 }
