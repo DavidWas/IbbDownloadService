@@ -3,6 +3,7 @@ using System;
 using IbbDownloadService.NugetModule.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IbbDownloadService.NugetModule.Migrations
 {
     [DbContext(typeof(NugetDbContext))]
-    partial class NugetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240920143352_AddIsInsertedByUpdater")]
+    partial class AddIsInsertedByUpdater
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

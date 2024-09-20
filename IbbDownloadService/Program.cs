@@ -1,6 +1,7 @@
 using System.Reflection;
 using IbbDownloadService.Components;
 using IbbDownloadService.NugetModule;
+using IbbDownloadService.NugetModule.Services;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Host.UseSerilog((_, config) =>
 List<Assembly> mediatRAssemblies = [typeof(Program).Assembly];
 builder.Services.AddNugetModule(builder.Configuration, logger, mediatRAssemblies);
 builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssemblies(mediatRAssemblies.ToArray()); });
+builder.Services.AddHttpClient();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 

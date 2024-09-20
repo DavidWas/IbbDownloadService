@@ -10,4 +10,5 @@ internal class Nuget
     public DateTime? UpdatedAt { get; set; }
     public DateTime? VerifiedAt { get; set; }
     public bool NeedsVerification { get; set; } = true;
+    public bool IsInsertedByUpdater { get; set; }
 }
