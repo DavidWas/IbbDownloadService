@@ -1,3 +1,4 @@
+using IbbDownloadService.NugetModule.Contracts.Events;
 using IbbDownloadService.NugetModule.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -5,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 namespace IbbDownloadService.NugetModule.Services;
 
-internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient httpClient, INugetPackageReader packageReader, ILogger logger) : BackgroundService
+internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient httpClient, INugetPackageReader packageReader, NugetUpdatedEvent nugetUpdatedEvent, ILogger logger) : BackgroundService
 {
     private HashSet<string> _existingNugets = new();
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -22,7 +23,6 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
                 foreach (var nuget in nugetsToDownload)
                 {
                     await LoadNugetPackage(stoppingToken, nuget, context);
-                    
                 }
 
                 var downloadedNugets = context.Nugets.Where(x => x.DownloadedAt != null);
@@ -102,6 +102,7 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
             nuget.DownloadedAt = DateTime.UtcNow;
             await context.SaveChangesAsync(stoppingToken);
             _existingNugets.Add($"{nuget.Name.ToLower()}.{nuget.Version.ToLower()}");
+            nugetUpdatedEvent.Notify();
         }
         catch (Exception ex)
         {

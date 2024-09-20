@@ -1,14 +1,22 @@
+@using IbbDownloadService.NugetModule.Contracts.DTOs
 @using IbbDownloadService.NugetModule.Contracts.Events
 @using IbbDownloadService.NugetModule.Contracts.Queries
 @using MediatR
+@implements IDisposable
 @namespace IbbDownloadService.Components
 
-<Table Rows="_verifiedRows" Header="_verifiedHeader" Title="Verified"></Table>
+<Table Rows="_verifiedRows" Header="_verifiedHeader" Title="Verified" RowActions="_rowActions"></Table>
+<Modal ModalId="DependenciesModal" ModalTitle="Dependencies" @bind-IsOpen="IsDependenciesModalOpen">
+    
+    @foreach (var dependency in _dependencies)
+    {
+        <p>@dependency.Name - @dependency.Version</p>
+    }
+</Modal>
 
 @inject IMediator Mediator
 @inject NugetUpdatedEvent NugetUpdatedEvent
 @code {
-
     private readonly Table.TableHeader[] _verifiedHeader =
     [
         new ("Id") {IsVisible = false},
@@ -16,22 +24,50 @@
         new("Added"),
         new("Version"),
         new("Verified"),
-        new("Downloaded")
+        new("Downloaded"),
+        new("")
     ];
     private List<string[]> _verifiedRows = new();
+    private bool IsDependenciesModalOpen { get; set; }
+    private IList<NugetDependency> _dependencies = new List<NugetDependency>();
 
     private async Task LoadVerifiedNugets()
     {
         var verifiedResult = await Mediator.Send(new GetVerifiedNugetsQuery());
-        _verifiedRows = verifiedResult.Select(n => new[] {n.Id.ToString(), n.Name, n.CreatedAt.ToString("dd.MM.yyyy"), n.Version, n.VerifiedAt?.ToString("dd.MM.yyyy") ?? "", n.DownloadedAt?.ToString("dd.MM.yyyy") ?? "" }).ToList();
+        _verifiedRows = verifiedResult.Select(n => new[]
+        {
+            n.Id.ToString(), 
+            n.Name, 
+            n.CreatedAt.ToString("dd.MM.yyyy"), 
+            n.Version, 
+            n.VerifiedAt?.ToString("dd.MM.yyyy") ?? "", 
+            n.DownloadedAt?.ToString("dd.MM.yyyy") ?? ""
+        }).ToList();
         StateHasChanged();
     }
+    private List<RenderFragment<string[]>> _rowActions = null!;
     
     protected override async Task OnInitializedAsync()
     {
         await LoadVerifiedNugets();
         NugetUpdatedEvent.OnNugetUpdated += LoadVerifiedNugets;
+        _rowActions = new List<RenderFragment<string[]>>
+        {
+            row => @<button type="button" class="rowButton" @onclick="(e) => OnDependenciesClicked(row)">Deps</button>
+        };
+    }
+    private async Task OnDependenciesClicked(string[] value)
+    {
+        var id = Guid.Parse(value[0]);
+        _dependencies = await Mediator.Send(new GetDependenciesQuery() {Id = id});
+        IsDependenciesModalOpen = true;
     }
     
+    public void Dispose()
+    {
+       NugetUpdatedEvent.OnNugetUpdated -= LoadVerifiedNugets;
+    }
 
 }
+
+

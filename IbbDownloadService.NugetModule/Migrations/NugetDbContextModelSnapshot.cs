@@ -54,6 +54,9 @@ namespace IbbDownloadService.NugetModule.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name", "Version")
+                        .IsUnique();
+
                     b.ToTable("Nugets", "Nugets");
                 });
 

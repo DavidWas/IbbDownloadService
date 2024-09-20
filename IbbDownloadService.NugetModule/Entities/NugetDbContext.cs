@@ -13,6 +13,7 @@ internal class NugetDbContext : DbContext
     {
         modelBuilder.HasDefaultSchema("Nugets");
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.Entity<Nuget>().HasIndex(x => new { x.Name, x.Version }).IsUnique();
     }
 
     public DbSet<Nuget> Nugets { get; set; } = null!;

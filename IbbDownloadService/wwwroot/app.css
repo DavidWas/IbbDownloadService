@@ -117,4 +117,19 @@ button.secondary:hover {
     box-shadow: 0 0 5px rgba(70, 130, 180, 0.5);
 }
 
+.rowButton {
+    background-color: steelblue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.rowButton:hover {
+    background-color: darkblue;
+}
+
 

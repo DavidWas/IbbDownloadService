@@ -37,6 +37,10 @@ internal class NugetVersionSync(IServiceProvider serviceProvider, ILogger<NugetV
     {
         var latestVersion = await GetLatestVersion(nuget.Name, stoppingToken);
         if (latestVersion == null || latestVersion == nuget.Version) return;
+        var loadedNuget = context.Nugets.FirstOrDefault(x =>
+            x.Name.ToLower() == nuget.Name.ToLower() &&
+            x.Version.ToLower() == latestVersion.ToLower());
+        if (loadedNuget != null) return;
         var createdNuget = new Nuget
         {
             Version = latestVersion,
