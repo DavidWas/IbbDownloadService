@@ -50,38 +50,13 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
             var dependencies = await packageReader.GetDependencies(nuget.Name, nuget.Version);
             foreach (var dependency in dependencies)
             {
-
-                var existingDependency =
-                    await context.Nugets.FirstOrDefaultAsync(
-                        x => x.Name.ToLower() == dependency.Id.ToLower() && x.Version.ToLower() == dependency.MaxVersion.Trim().ToLower(), stoppingToken);
-                if (existingDependency == null &&
-                    !_existingNugets.Contains($"{dependency.Id.ToLower()}.{dependency.MaxVersion.ToLower()}"))
+                var existingDependency = await GetExistingDependency(context, dependency, stoppingToken);
+                if (existingDependency == null)
                 {
-                    existingDependency = new Nuget()
-                    {
-                        Name = dependency.Id,
-                        Version = dependency.MaxVersion,
-                        VerifiedAt = null,
-                        NeedsVerification = false,
-                        CreatedAt = DateTime.UtcNow,
-                        IsInsertedByUpdater = true
-                    };
-                    context.Nugets.Add(existingDependency);
-                    _existingNugets.Add($"{existingDependency.Name.ToLower()}.{existingDependency.Version.ToLower()}");
+                    existingDependency = await AddNewDependency(context, dependency, stoppingToken);
                 }
 
-                if (existingDependency != null && !context.NugetDependencies.Any(x =>
-                    x.NugetId == nuget.Id && x.DependencyId == existingDependency.Id))
-                {
-                    context.NugetDependencies.Add(new NugetDependency()
-                    {
-                        NugetId = nuget.Id,
-                        DependencyId = existingDependency.Id
-                    });
-                }
-
-                await context.SaveChangesAsync(stoppingToken);
-                
+                await AddNugetDependency(context, nuget, existingDependency, stoppingToken);
             }
         }
         catch (Exception ex)
@@ -89,6 +64,44 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
             logger.Error("Failed to load dependencies for {Id} {Version}", nuget.Name, nuget.Version);
         }
 
+    }
+    
+    private async Task<Nuget?> GetExistingDependency(NugetDbContext context, NugetDependencyData dependency, CancellationToken stoppingToken)
+    {
+        return await context.Nugets.FirstOrDefaultAsync(
+            x => x.Name.ToLower() == dependency.Id.ToLower() && x.Version.ToLower() == dependency.MaxVersion.Trim().ToLower(), stoppingToken);
+    }
+    
+    private async Task<Nuget> AddNewDependency(NugetDbContext context, NugetDependencyData dependency, CancellationToken stoppingToken)
+    {
+        var newDependency = new Nuget
+        {
+            Name = dependency.Id,
+            Version = dependency.MaxVersion,
+            VerifiedAt = null,
+            NeedsVerification = false,
+            CreatedAt = DateTime.UtcNow,
+            IsInsertedByUpdater = true
+        };
+
+        context.Nugets.Add(newDependency);
+        _existingNugets.Add($"{newDependency.Name.ToLower()}.{newDependency.Version.ToLower()}");
+        await context.SaveChangesAsync(stoppingToken);
+        return newDependency;
+    }
+    
+    private async Task AddNugetDependency(NugetDbContext context, Nuget nuget, Nuget existingDependency, CancellationToken stoppingToken)
+    {
+        if (!context.NugetDependencies.Any(x => x.NugetId == nuget.Id && x.DependencyId == existingDependency.Id))
+        {
+            context.NugetDependencies.Add(new NugetDependency
+            {
+                NugetId = nuget.Id,
+                DependencyId = existingDependency.Id
+            });
+
+            await context.SaveChangesAsync(stoppingToken);
+        }
     }
 
     private async Task LoadNugetPackage(CancellationToken stoppingToken, Nuget nuget, NugetDbContext context)
