@@ -1,0 +1,40 @@
+﻿@inherits LayoutComponentBase
+<div class="content">
+    <ul class="nav nav-pills" role="tablist">
+        @foreach (var tab in _tabs.Select((value, index) => new { value, index }))
+        {
+            <li class="nav-item">
+                <a class="nav-link @(SelectedTab == tab.index ? "active" : "")"
+                   @onclick="() => SelectTab(tab.index)">
+                    @tab.value
+                </a>
+            </li>
+        }
+
+    </ul>
+    <div class="tab-content">
+        @Body
+    </div>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@inject NavigationManager Navigation
+
+@code{
+    private readonly string[] _tabs = new string[] { "Nugets", "Docker" };
+
+    private int SelectedTab { get; set; } = 0;
+
+    private void SelectTab(int tab)
+    {
+        SelectedTab = tab;
+        var route = tab == 0 ? "" : _tabs[tab].ToLower();
+        Navigation.NavigateTo($"/{route}");
+    }
+
+}

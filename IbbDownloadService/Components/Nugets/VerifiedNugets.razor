@@ -1,0 +1,20 @@
+@using IbbDownloadService.NugetModule.Contracts.Queries
+@using MediatR
+@namespace IbbDownloadService.Components
+
+<Table Rows="_verifiedRows" Header="_verifiedHeader" Title="Verified"></Table>
+
+@inject IMediator Mediator
+
+@code {
+
+    private readonly string[] _verifiedHeader = ["Name", "Added", "Version", "Verified", "MD5"];
+    private List<string[]> _verifiedRows = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var verifiedResult = await Mediator.Send(new GetVerifiedNugetsQuery());
+        _verifiedRows = verifiedResult.Select(n => new[] { n.Name, n.CreatedAt.ToString("dd.MM.yyyy"), n.Version, n.VerifiedAt?.ToString("dd.MM.yyyy") ?? "", n.Md5Hash }).ToList();
+    }
+
+}

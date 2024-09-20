@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IbbDownloadService", "IbbDownloadService\IbbDownloadService.csproj", "{087D7D17-9403-469E-B3CE-D159F06127EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IbbDownloadService.NugetModule", "IbbDownloadService.NugetModule\IbbDownloadService.NugetModule.csproj", "{1D066FD4-F0A6-4249-9850-08E22E54FC71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IbbDownloadService.NugetModule.Contracts", "IbbDownloadService.NugetModule.Contracts\IbbDownloadService.NugetModule.Contracts.csproj", "{0290B512-C742-4AEA-816C-09BFD3559E3F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{087D7D17-9403-469E-B3CE-D159F06127EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{087D7D17-9403-469E-B3CE-D159F06127EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{087D7D17-9403-469E-B3CE-D159F06127EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{087D7D17-9403-469E-B3CE-D159F06127EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D066FD4-F0A6-4249-9850-08E22E54FC71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D066FD4-F0A6-4249-9850-08E22E54FC71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D066FD4-F0A6-4249-9850-08E22E54FC71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D066FD4-F0A6-4249-9850-08E22E54FC71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0290B512-C742-4AEA-816C-09BFD3559E3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0290B512-C742-4AEA-816C-09BFD3559E3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0290B512-C742-4AEA-816C-09BFD3559E3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0290B512-C742-4AEA-816C-09BFD3559E3F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

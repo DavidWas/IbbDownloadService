@@ -1,0 +1,72 @@
+@using IbbDownloadService.NugetModule.Contracts.Commands
+@using IbbDownloadService.NugetModule.Contracts.DTOs
+@using IbbDownloadService.NugetModule.Contracts.Queries
+@using MediatR
+@inject IJSRuntime JSRuntime
+@namespace IbbDownloadService.Components
+
+<div class="container">
+    <Table Rows="_pendingRows" Header="_header" Title="Pending"></Table>
+    <button type="button" class="primary" onclick="window.showDialog('AddPendingModal');">Add</button>
+</div>
+
+<Modal ModalId="AddPendingModal" ModalTitle="Hinzufügen">
+    <EditForm EditContext="_editContext">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+
+        <div class="form-group">
+            <label for="Name">Name</label>
+            <InputText id="Name" class="form-control" @bind-Value="_addPendingNuget.Name"/>
+        </div>
+
+        <div class="form-group">
+            <label for="Version">Version</label>
+            <InputText id="Version" class="form-control" @bind-Value="_addPendingNuget.Version"/>
+        </div>
+
+        <div class="form-group">
+            <label for="Md5Hash">MD5 Hash</label>
+            <InputText id="Md5Hash" class="form-control" @bind-Value="_addPendingNuget.Md5"/>
+        </div>
+
+        <div class="form-buttons">
+            <button type="button" class="primary" @onclick="HandleSubmit">Submit</button>
+            <button type="button" class="secondary" onclick="window.closeDialog('AddPendingModal');">Cancel</button>
+        </div>
+    </EditForm>
+</Modal>
+
+
+@inject IMediator Mediator
+
+@code {
+    private readonly string[] _header = ["Name", "Added", "Version", "MD5"];
+    private List<string[]> _pendingRows = new();
+    private AddPendingNuget _addPendingNuget = new();
+    private EditContext _editContext = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await Mediator.Send(new GetPendingNugetsQuery());
+        _pendingRows = result.Select(n => new[] { n.Name, n.CreatedAt.ToString("dd.MM.yyyy"), n.Version, n.Md5Hash }).ToList();
+        _editContext = new EditContext(_addPendingNuget);
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (_editContext?.Validate() ?? false)
+        {
+            var command = new AddPendingNugetCommand()
+            {
+                Name = _addPendingNuget.Name,
+                Version = _addPendingNuget.Version,
+                Md5 = _addPendingNuget.Md5
+            };
+            await Mediator.Send(command);
+            await JSRuntime.InvokeVoidAsync("window.closeDialog", "AddPendingModal");
+        }
+    }
+
+
+}

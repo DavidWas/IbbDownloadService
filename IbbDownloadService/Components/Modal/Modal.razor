@@ -1,0 +1,27 @@
+@namespace IbbDownloadService.Components
+
+<div>
+    @* <button class="primary" onclick="window.dialog.showModal();">Open Dialog</button> *@
+
+    <dialog id="@ModalId">
+        <h2>@ModalTitle</h2>
+        @ChildContent
+        <button onclick="@CloseAction" aria-label="close" class="x">❌</button>
+    </dialog>
+
+
+</div>
+
+
+@code {
+[Parameter]
+public string ModalId { get; set; }  = "dialog";
+
+[Parameter]
+public string ModalTitle { get; set; } = "Modal Title";
+
+[Parameter]
+public RenderFragment? ChildContent { get; set; }
+
+private string CloseAction => $"window.{ModalId}.close();";
+}

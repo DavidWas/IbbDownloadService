@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <link rel="stylesheet" href="app.css"/>
+    <link rel="stylesheet" href="IbbDownloadService.styles.css"/>
+    <HeadOutlet @rendermode="InteractiveServer"/>
+    <script>
+        window.showDialog = function (modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.showModal();
+            } else {
+                console.error(`Modal with id ${modalId} not found.`);
+            }
+        };
+
+        window.closeDialog = function (modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.close();
+            } else {
+                console.error(`Modal with id ${modalId} not found.`);
+            }
+        };
+    </script>
+</head>
+
+<body>
+<Routes @rendermode="InteractiveServer"/>
+<script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
