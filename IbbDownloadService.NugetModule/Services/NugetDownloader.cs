@@ -36,8 +36,7 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
                 logger.Error(ex, "Failed to download nuget packages");
             }
             logger.Information("Finished Nuget download");
-            await Task.Delay(10000, stoppingToken);
-                
+            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
         }
 
     }

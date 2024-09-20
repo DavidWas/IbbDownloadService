@@ -16,7 +16,7 @@ internal class NugetVersionSync(IServiceProvider serviceProvider, ILogger<NugetV
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<NugetDbContext>();
             logger.LogInformation("Starting Nuget version sync");
-            var nugetsToCrawl = context.Nugets.Where(x => x.VerifiedAt != null || x.NeedsVerification == false);
+            var nugetsToCrawl = context.Nugets.Where(x => x.VerifiedAt != null);
             foreach (var nuget in nugetsToCrawl)
             {
                 try
@@ -29,7 +29,7 @@ internal class NugetVersionSync(IServiceProvider serviceProvider, ILogger<NugetV
                 }
             }
             logger.LogInformation("Finished Nuget version sync");
-            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
         }
     }
 
@@ -55,7 +55,7 @@ internal class NugetVersionSync(IServiceProvider serviceProvider, ILogger<NugetV
         var httpClient = serviceProvider.GetRequiredService<HttpClient>();
         try
         {
-            var requestUrl = $"https://api.nuget.org/v3-flatcontainer/{packageName}/index.json";
+            var requestUrl = $"https://api.nuget.org/v3-flatcontainer/{packageName.ToLower()}/index.json";
             var response = await httpClient.GetAsync(requestUrl, cancellationToken);
             if (response.IsSuccessStatusCode)
             {

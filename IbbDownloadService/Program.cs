@@ -19,6 +19,7 @@ builder.Host.UseSerilog((context, config) =>
         .Enrich.FromLogContext()
         .MinimumLevel.Information()
         .WriteTo.Console()
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
     );
 List<Assembly> mediatRAssemblies = [typeof(Program).Assembly];
 builder.Services.AddNugetModule(builder.Configuration, logger, mediatRAssemblies);
