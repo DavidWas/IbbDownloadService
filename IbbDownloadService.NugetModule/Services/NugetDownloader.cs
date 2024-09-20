@@ -8,7 +8,6 @@ namespace IbbDownloadService.NugetModule.Services;
 
 internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient httpClient, INugetPackageReader packageReader, NugetUpdatedEvent nugetUpdatedEvent, ILogger logger) : BackgroundService
 {
-    private HashSet<string> _existingNugets = new();
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.Information("Nuget downloader started");
@@ -16,10 +15,10 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<NugetDbContext>();
-            var nugetsToDownload = context.Nugets.Where(x => (x.NeedsVerification == false || x.VerifiedAt != null) && x.DownloadedAt == null);
             logger.Information("Starting Nuget download");
             try
             {
+                var nugetsToDownload = context.Nugets.Where(x => (x.NeedsVerification == false || x.VerifiedAt != null) && x.DownloadedAt == null);
                 foreach (var nuget in nugetsToDownload)
                 {
                     await LoadNugetPackage(stoppingToken, nuget, context);
@@ -85,7 +84,6 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
         };
 
         context.Nugets.Add(newDependency);
-        _existingNugets.Add($"{newDependency.Name.ToLower()}.{newDependency.Version.ToLower()}");
         await context.SaveChangesAsync(stoppingToken);
         return newDependency;
     }
@@ -118,7 +116,6 @@ internal class NugetDownloader(IServiceProvider serviceProvider, HttpClient http
             await File.WriteAllBytesAsync(path, downloadResult, stoppingToken);
             nuget.DownloadedAt = DateTime.UtcNow;
             await context.SaveChangesAsync(stoppingToken);
-            _existingNugets.Add($"{nuget.Name.ToLower()}.{nuget.Version.ToLower()}");
             nugetUpdatedEvent.Notify();
         }
         catch (Exception ex)
