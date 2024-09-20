@@ -18,7 +18,9 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<NugetDbContext>(options => { options.UseSqlite("Data Source=nuget.db"); });
         mediatRAssemblies.Add(typeof(ServiceCollectionExtensions).Assembly);
         services.AddSingleton<NugetUpdatedEvent>();
+        services.AddSingleton<INugetPackageReader, NugetPackageReader>();
         services.AddHostedService<NugetVersionSync>();
+        services.AddHostedService<NugetDownloader>();
         logger.Information("Finished adding NugetModule services");
         return services;
     }

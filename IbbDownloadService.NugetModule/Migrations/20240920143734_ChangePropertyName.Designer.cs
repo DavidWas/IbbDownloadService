@@ -3,6 +3,7 @@ using System;
 using IbbDownloadService.NugetModule.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IbbDownloadService.NugetModule.Migrations
 {
     [DbContext(typeof(NugetDbContext))]
-    partial class NugetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240920143734_ChangePropertyName")]
+    partial class ChangePropertyName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,39 +58,6 @@ namespace IbbDownloadService.NugetModule.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Nugets", "Nugets");
-                });
-
-            modelBuilder.Entity("IbbDownloadService.NugetModule.Entities.NugetDependency", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("DependencyId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("NugetId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NugetId");
-
-                    b.ToTable("NugetDependencies", "Nugets");
-                });
-
-            modelBuilder.Entity("IbbDownloadService.NugetModule.Entities.NugetDependency", b =>
-                {
-                    b.HasOne("IbbDownloadService.NugetModule.Entities.Nuget", null)
-                        .WithMany("NugetDependencies")
-                        .HasForeignKey("NugetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("IbbDownloadService.NugetModule.Entities.Nuget", b =>
-                {
-                    b.Navigation("NugetDependencies");
                 });
 #pragma warning restore 612, 618
         }

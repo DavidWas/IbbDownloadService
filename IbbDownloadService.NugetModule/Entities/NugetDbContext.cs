@@ -16,4 +16,5 @@ internal class NugetDbContext : DbContext
     }
 
     public DbSet<Nuget> Nugets { get; set; } = null!;
+    public DbSet<NugetDependency> NugetDependencies { get; set; } = null!;
 }

@@ -15,7 +15,8 @@ internal class GetVerifiedNugetsHandler : IRequestHandler<GetVerifiedNugetsQuery
     }
     public Task<IList<VerifiedNuget>> Handle(GetVerifiedNugetsQuery request, CancellationToken cancellationToken)
     {
-        var verifiedNugets = _context.Nugets.Where(x => x.VerifiedAt != null || !x.NeedsVerification);
+        var verifiedNugets = _context.Nugets.Where(x => x.VerifiedAt != null || !x.NeedsVerification)
+            .OrderBy(x => x.Name);
         IList<VerifiedNuget> result = verifiedNugets.Select(x => new VerifiedNuget()
         {
             Id = x.Id,
@@ -23,7 +24,8 @@ internal class GetVerifiedNugetsHandler : IRequestHandler<GetVerifiedNugetsQuery
             Version = x.Version,
             Md5Hash = x.Md5,
             CreatedAt = x.CreatedAt,
-            VerifiedAt = x.VerifiedAt
+            VerifiedAt = x.VerifiedAt,
+            DownloadedAt = x.DownloadedAt
         }).ToList();
         return Task.FromResult(result);
     }

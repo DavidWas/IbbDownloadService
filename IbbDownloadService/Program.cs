@@ -3,6 +3,7 @@ using IbbDownloadService.Components;
 using IbbDownloadService.NugetModule;
 using IbbDownloadService.NugetModule.Services;
 using Serilog;
+using ILogger = Serilog.ILogger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +13,13 @@ var logger = Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 logger.Information("Starting web host");
-builder.Host.UseSerilog((_, config) =>
-    config.ReadFrom.Configuration(builder.Configuration));
+builder.Services.AddSingleton<ILogger>(logger);
+builder.Host.UseSerilog((context, config) =>
+    config.ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .MinimumLevel.Information()
+        .WriteTo.Console()
+    );
 List<Assembly> mediatRAssemblies = [typeof(Program).Assembly];
 builder.Services.AddNugetModule(builder.Configuration, logger, mediatRAssemblies);
 builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssemblies(mediatRAssemblies.ToArray()); });

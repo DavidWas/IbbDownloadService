@@ -7,8 +7,9 @@ internal class Nuget
     public string Version { get; init; } = "";
     public string Md5 { get; init; } = "";
     public DateTime CreatedAt { get; init; }
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? DownloadedAt { get; set; }
     public DateTime? VerifiedAt { get; set; }
     public bool NeedsVerification { get; set; } = true;
     public bool IsInsertedByUpdater { get; set; }
+    public ICollection<NugetDependency> NugetDependencies { get; set; } = new List<NugetDependency>();
 }
